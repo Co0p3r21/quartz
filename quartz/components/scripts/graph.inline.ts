@@ -73,7 +73,6 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
   const visited = getVisited()
   removeAllChildren(graph)
 
-  const cfg = JSON.parse(graph.dataset["cfg"]!) as D3Config & { showVisited?: boolean }
   let {
     drag: enableDrag,
     zoom: enableZoom,
@@ -88,8 +87,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
     showTags,
     focusOnHover,
     enableRadial,
-    showVisited,
-  } = cfg
+  } = JSON.parse(graph.dataset["cfg"]!) as D3Config
 
   const data: Map<SimpleSlug, ContentDetails> = new Map(
     Object.entries<ContentDetails>(await fetchData).map(([k, v]) => [
@@ -154,10 +152,8 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
     }
   })
 
-  // show only visited nodes (or the current node) — hide all others when enabled
-  const visibleNodes = showVisited
-    ? allNodes.filter((n) => visited.has(n.id) || n.id === slug)
-    : allNodes
+  // show only visited nodes (or the current node) — hide all others
+  const visibleNodes = allNodes.filter((n) => visited.has(n.id) || n.id === slug)
 
   const graphData: { nodes: NodeData[]; links: LinkData[] } = {
     nodes: visibleNodes,
