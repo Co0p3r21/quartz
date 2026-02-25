@@ -11,6 +11,7 @@ interface ParsedOptions {
   sortFn: (a: FileTrieNode, b: FileTrieNode) => number
   filterFn: (node: FileTrieNode) => boolean
   mapFn: (node: FileTrieNode) => void
+  showVisited?: boolean
   order: "sort" | "filter" | "map"[]
 }
 
@@ -163,6 +164,7 @@ async function setupExplorer(currentSlug: FullSlug) {
       folderClickBehavior: (explorer.dataset.behavior || "collapse") as "collapse" | "link",
       folderDefaultState: (explorer.dataset.collapsed || "collapsed") as "collapsed" | "open",
       useSavedState: explorer.dataset.savestate === "true",
+      showVisited: explorer.dataset.showVisited === "true",
       order: dataFns.order || ["filter", "map", "sort"],
       sortFn: new Function("return " + (dataFns.sortFn || "undefined"))(),
       filterFn: new Function("return " + (dataFns.filterFn || "undefined"))(),
@@ -193,6 +195,27 @@ async function setupExplorer(currentSlug: FullSlug) {
           if (opts.sortFn) trie.sort(opts.sortFn)
           break
       }
+    }
+
+    // Optionally show only visited nodes (or the current node and its ancestors)
+    if (opts.showVisited) {
+      const visitedRaw = localStorage.getItem("graph-visited")
+      const visited = new Set<string>(
+        (visitedRaw ? JSON.parse(visitedRaw) : []).map((s: string) => simplifySlug(s)),
+      )
+
+      function nodeOrDescendantVisited(node: FileTrieNode): boolean {
+        const nodeSlug = simplifySlug(node.slug)
+        if (visited.has(nodeSlug)) return true
+        if (nodeSlug === simplifySlug(currentSlug)) return true
+        if (!node.isFolder) return false
+        for (const child of node.children) {
+          if (nodeOrDescendantVisited(child)) return true
+        }
+        return false
+      }
+
+      trie.filter(nodeOrDescendantVisited)
     }
 
     // Get folder paths for state management
