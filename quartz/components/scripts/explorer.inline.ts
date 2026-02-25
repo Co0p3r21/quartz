@@ -11,7 +11,6 @@ interface ParsedOptions {
   sortFn: (a: FileTrieNode, b: FileTrieNode) => number
   filterFn: (node: FileTrieNode) => boolean
   mapFn: (node: FileTrieNode) => void
-  showVisited?: boolean
   order: "sort" | "filter" | "map"[]
 }
 
@@ -164,7 +163,6 @@ async function setupExplorer(currentSlug: FullSlug) {
       folderClickBehavior: (explorer.dataset.behavior || "collapse") as "collapse" | "link",
       folderDefaultState: (explorer.dataset.collapsed || "collapsed") as "collapsed" | "open",
       useSavedState: explorer.dataset.savestate === "true",
-      showVisited: explorer.dataset.showVisited === "true",
       order: dataFns.order || ["filter", "map", "sort"],
       sortFn: new Function("return " + (dataFns.sortFn || "undefined"))(),
       filterFn: new Function("return " + (dataFns.filterFn || "undefined"))(),
@@ -197,8 +195,7 @@ async function setupExplorer(currentSlug: FullSlug) {
       }
     }
 
-    // Optionally show only visited nodes (or the current node and its ancestors)
-    if (opts.showVisited) {
+    // show only visited nodes (or the current node and its ancestors)
       const visitedRaw = localStorage.getItem("graph-visited")
       const visited = new Set<string>(
         (visitedRaw ? JSON.parse(visitedRaw) : []).map((s: string) => simplifySlug(s)),
