@@ -154,8 +154,6 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
 
   // show only visited nodes (or the current node) — hide all others
   const visibleNodes = allNodes.filter((n) => visited.has(n.id) || n.id === slug)
-  // debug: show counts to help verify filtering
-  console.debug("graph: total nodes=", allNodes.length, "visible nodes=", visibleNodes.length, "sample visible=", visibleNodes.slice(0, 10).map((n) => n.id))
 
   const graphData: { nodes: NodeData[]; links: LinkData[] } = {
     nodes: visibleNodes,
