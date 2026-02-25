@@ -143,7 +143,7 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
     if (showTags) tags.forEach((tag) => neighbourhood.add(tag))
   }
 
-  const nodes = [...neighbourhood].map((url) => {
+  const allNodes = [...neighbourhood].map((url) => {
     const text = url.startsWith("tags/") ? "#" + url.substring(5) : (data.get(url)?.title ?? url)
     return {
       id: url,
@@ -151,13 +151,19 @@ async function renderGraph(graph: HTMLElement, fullSlug: FullSlug) {
       tags: data.get(url)?.tags ?? [],
     }
   })
+
+  // show only visited nodes (or the current node) — hide all others
+  const visibleNodes = allNodes.filter((n) => visited.has(n.id) || n.id === slug)
+  // debug: show counts to help verify filtering
+  console.debug("graph: total nodes=", allNodes.length, "visible nodes=", visibleNodes.length, "sample visible=", visibleNodes.slice(0, 10).map((n) => n.id))
+
   const graphData: { nodes: NodeData[]; links: LinkData[] } = {
-    nodes,
+    nodes: visibleNodes,
     links: links
-      .filter((l) => neighbourhood.has(l.source) && neighbourhood.has(l.target))
+      .filter((l) => visibleNodes.some((n) => n.id === l.source) && visibleNodes.some((n) => n.id === l.target))
       .map((l) => ({
-        source: nodes.find((n) => n.id === l.source)!,
-        target: nodes.find((n) => n.id === l.target)!,
+        source: visibleNodes.find((n) => n.id === l.source)!,
+        target: visibleNodes.find((n) => n.id === l.target)!,
       })),
   }
 
