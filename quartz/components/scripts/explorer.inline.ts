@@ -213,7 +213,6 @@ async function setupExplorer(currentSlug: FullSlug) {
       }
 
       trie.filter(nodeOrDescendantVisited)
-    }
 
     // Get folder paths for state management
     const folderPaths = trie.getFolderPaths()
