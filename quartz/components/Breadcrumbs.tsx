@@ -7,7 +7,8 @@ import { trieFromAllFiles } from "../util/ctx"
 type CrumbData = {
   displayName: string
   path: string
-  isFolder?: boolean
+  // true when node represents a folder without an index file
+  isFolderOnly?: boolean
 }
 
 interface BreadcrumbOptions {
@@ -45,7 +46,7 @@ function formatCrumb(
   return {
     displayName: displayName.replaceAll("-", " "),
     path: resolveRelative(baseSlug, currentSlug),
-    isFolder,
+    isFolderOnly: isFolder ?? false,
   }
 }
 
@@ -70,7 +71,8 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
         node.displayName,
         fileData.slug!,
         simplifySlug(node.slug),
-        node.isFolder,
+        // mark as folder-only if it's a folder and has no index (data === null)
+        node.isFolder && node.data == null,
       )
       if (idx === 0) {
         crumb.displayName = options.rootName
@@ -92,7 +94,7 @@ export default ((opts?: Partial<BreadcrumbOptions>) => {
       <nav class={classNames(displayClass, "breadcrumb-container")} aria-label="breadcrumbs">
         {crumbs.map((crumb, index) => (
           <div class="breadcrumb-element">
-            {crumb.isFolder || crumb.path === "" ? (
+            {crumb.isFolderOnly || crumb.path === "" ? (
               <p>{crumb.displayName}</p>
             ) : (
               <a href={crumb.path}>{crumb.displayName}</a>
