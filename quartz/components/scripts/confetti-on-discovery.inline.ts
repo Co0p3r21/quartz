@@ -2,12 +2,26 @@ function normalize(path: string) {
   return path.replace(/\/+$/, "") || "/"
 }
 
+function toComparableSlug(path: string) {
+  const normalized = normalize(path)
+    .replace(/^\/+/, "")
+    .replace(/\/index$/, "")
+
+  return normalized === "" ? "index" : normalized
+}
+
+const confettiVisitedKey = "graph-visited"
+
 function getVisited(): string[] {
   try {
-    return JSON.parse(localStorage.getItem("graph-visited") || "[]")
+    return JSON.parse(localStorage.getItem(confettiVisitedKey) || "[]")
   } catch {
     return []
   }
+}
+
+function setVisited(slugs: string[]) {
+  localStorage.setItem(confettiVisitedKey, JSON.stringify(slugs))
 }
 
 function getConfettiFn() {
@@ -90,18 +104,13 @@ function triggerConfettiWhenVisible() {
 }
 
 function checkAndCelebrate() {
-  const pageId = normalize(window.location.pathname)
-  const before = getVisited().map(normalize)
+  const pageId = toComparableSlug(document.body.dataset.slug ?? window.location.pathname)
+  const visited = getVisited().map(toComparableSlug)
 
-  // Wait briefly so graph.inline can persist the current slug on "nav".
-  setTimeout(() => {
-    const after = getVisited().map(normalize)
-    const isNewVisit = !before.includes(pageId) && after.includes(pageId)
-
-    if (isNewVisit) {
-      triggerConfettiWhenVisible()
-    }
-  }, 120)
+  if (!visited.includes(pageId)) {
+    //setVisited([...visited, pageId])
+    triggerConfettiWhenVisible()
+  }
 }
 
 checkAndCelebrate()
