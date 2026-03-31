@@ -11,6 +11,7 @@ function toComparableSlug(path: string) {
 }
 
 const confettiVisitedKey = "graph-visited"
+const excludedConfettiSlugs = new Set(["index", "404"])
 
 function getVisited(): string[] {
   try {
@@ -105,6 +106,10 @@ function triggerConfettiWhenVisible() {
 
 function checkAndCelebrate() {
   const pageId = toComparableSlug(document.body.dataset.slug ?? window.location.pathname)
+  if (excludedConfettiSlugs.has(pageId)) {
+    return
+  }
+
   const visited = getVisited().map(toComparableSlug)
 
   if (!visited.includes(pageId)) {
