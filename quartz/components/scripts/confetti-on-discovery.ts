@@ -68,11 +68,14 @@ function checkAndCelebrate() {
 }
 
 export default (() => {
-  // läuft bei initialem Laden
-  checkAndCelebrate()
-
-  // läuft bei SPA Navigation (SEHR wichtig für Quartz)
-  document.addEventListener("nav", () => {
+  // Only run in the browser, not during build time
+  if (typeof window !== "undefined" && typeof document !== "undefined") {
+    // läuft bei initialem Laden
     checkAndCelebrate()
-  })
+
+    // läuft bei SPA Navigation (SEHR wichtig für Quartz)
+    document.addEventListener("nav", () => {
+      checkAndCelebrate()
+    })
+  }
 }) satisfies QuartzComponentConstructor
