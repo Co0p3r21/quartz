@@ -1,5 +1,7 @@
 function normalize(path: string) {
-  return path.replace(/\/+$/, "") || "/"
+  const withoutFragment = path.split("#", 1)[0]
+  const withoutQuery = withoutFragment.split("?", 1)[0]
+  return withoutQuery.replace(/\/+$/, "") || "/"
 }
 
 function toComparableSlug(path: string) {
@@ -91,16 +93,28 @@ function triggerConfettiWhenVisible() {
       void fire()
     }, 200)
   } else {
+    let fired = false
+    const fireOnce = () => {
+      if (fired) {
+        return
+      }
+
+      fired = true
+      setTimeout(() => {
+        void fire()
+      }, 200)
+      document.removeEventListener("visibilitychange", onVisible)
+      window.removeEventListener("pageshow", fireOnce)
+    }
+
     const onVisible = () => {
       if (document.visibilityState === "visible") {
-        setTimeout(() => {
-          void fire()
-        }, 200)
-        document.removeEventListener("visibilitychange", onVisible)
+        fireOnce()
       }
     }
 
     document.addEventListener("visibilitychange", onVisible)
+    window.addEventListener("pageshow", fireOnce)
   }
 }
 
